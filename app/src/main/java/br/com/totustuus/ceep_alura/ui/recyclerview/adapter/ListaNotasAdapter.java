@@ -13,7 +13,23 @@ import java.util.List;
 import br.com.totustuus.ceep_alura.R;
 import br.com.totustuus.ceep_alura.model.Nota;
 
-public class ListaNotasAdapter extends RecyclerView.Adapter {
+/*
+Algo importante e que deve ficar bem claro é que o cast que aplicamos é opcional.
+
+Sabemos que essa técnica traz riscos, pois podemos assumir que é outra classe, sendo que
+na verdade a responsabilidade é do método, o que pode gerar exceptions.
+
+Para evitar esse tipo de situação, existe uma alternativa de implementação do RecyclerView.Adapter que
+recebe generics, dispensando-se a utilização do cast.
+
+O nosso objetivo será estabelecer que o RecyclerView.Adapter trabalhará em cima de um ViewHolder
+implementado.
+Aplicaremos essa ideia ao código, adicionando <ListaNotasAdapter.NotaViewHolder> após RecyclerView.Adapter,
+na declaração da classe ListaNotasAdapter.
+
+
+ */
+public class ListaNotasAdapter extends RecyclerView.Adapter<ListaNotasAdapter.NotaViewHolder> {
 
     private List<Nota> notas;
     private Context context;
@@ -35,15 +51,15 @@ public class ListaNotasAdapter extends RecyclerView.Adapter {
      */
     @NonNull
     @Override
-    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int i) {
+    public ListaNotasAdapter.NotaViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int i) {
 
         /*
         Responsável pela criação de contêineres das Views que ficam visíveis na tela.
-        Pensando nisso, aplicaremos o mesmo processo que aplicaríamos no baseAdapter.
+        Pensando nisso, aplicaremos o mesmo processo que aplicaríamos no BaseAdapter.
         Isto é, faremos o inflate do layout que queremos exibir.
          */
         final View viewCriada = LayoutInflater.from(context).inflate(R.layout.item_nota, parent, false);
-        return new ListNotaHolder(viewCriada);
+        return new NotaViewHolder(viewCriada);
     }
 
     /*
@@ -60,9 +76,13 @@ public class ListaNotasAdapter extends RecyclerView.Adapter {
     do elemento, serão inseridos nela os respectivos valores.
      */
     @Override
-    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull ListaNotasAdapter.NotaViewHolder holder, int position) {
 
         /*
+        ---------------
+        Antes da alteração de RecyclerView.Adapter para RecyclerView.Adapter<ListaNotasAdapter.NotaViewHolder>,
+        estava funcionando como comentado abaixo:
+
         De forma semelhante ao que fizemos no Adapter do ListView, acessaremos uma
         View por meio de NotaViewHolder().
 
@@ -70,13 +90,10 @@ public class ListaNotasAdapter extends RecyclerView.Adapter {
         recebe um holder. A partir dele, temos acesso a itemView, referente à View que criamos.
 
         Com uma referência, podemos pegar uma View por meio de findViewById()
+        ---------------
          */
         Nota nota = notas.get(position);
-        TextView titulo = holder.itemView.findViewById(R.id.item_nota_titulo);
-        titulo.setText(nota.getTitulo());
-
-        TextView descricao = holder.itemView.findViewById(R.id.item_nota_descricao);
-        descricao.setText(nota.getDescricao());
+        holder.vincula(nota);
     }
 
     @Override
@@ -94,18 +111,33 @@ public class ListaNotasAdapter extends RecyclerView.Adapter {
 
     Por ser a abordagem mais utilizada e pelo fato do seu uso ser restrito ao Adapter;
     portanto, não há necessidade de criá-la de forma pública, para que fique acessível por fora.
-
+    
     Mas fique à vontade para criar um arquivo à parte, se preferir.
      */
-    class ListNotaHolder extends RecyclerView.ViewHolder {
+    class NotaViewHolder extends RecyclerView.ViewHolder {
+
+        private final TextView titulo;
+        private final TextView descricao;
 
         /*
         A implementação de NotaViewHolder recebe View, que representa
         cada item da View (itemView) e chama super para enviar itemView
         ao ViewHolder do RecyclerView.
+
+        Esse construtor será chamado toda vez que onCreateViewHolder()
+        for chamado. Ou seja, será chamado pouquíssimas vezes, já que
+        o número de ViewHolder's é limitado.
          */
-        public ListNotaHolder(@NonNull View itemView) {
+        public NotaViewHolder(@NonNull View itemView) {
             super(itemView);
+            titulo = itemView.findViewById(R.id.item_nota_titulo);
+            descricao = itemView.findViewById(R.id.item_nota_descricao);
         }
+
+        public void vincula(Nota nota) {
+            titulo.setText(nota.getTitulo());
+            descricao.setText(nota.getDescricao());
+        }
+
     }
 }
