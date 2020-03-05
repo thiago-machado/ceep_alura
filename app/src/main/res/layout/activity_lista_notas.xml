@@ -8,12 +8,16 @@
 
     <!--
     Lista de notas
-    Antes a ListGroup era ListView e foi substituido por RecyclerView
+    Antes a ListGroup era ListView e foi substituido por RecyclerView.
+
+    app:layoutManager="LinearLayoutManager" = isso era feito antes na Activity, mas
+    agora está definido no aqui no XML.
     -->
     <android.support.v7.widget.RecyclerView
         android:id="@+id/lista_notas_recycler_view"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        app:layoutManager="LinearLayoutManager"
         app:layout_constraintBottom_toTopOf="@id/lista_notas_insere_nota"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

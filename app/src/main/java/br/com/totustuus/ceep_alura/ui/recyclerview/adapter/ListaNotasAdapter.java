@@ -31,8 +31,8 @@ na declaração da classe ListaNotasAdapter.
  */
 public class ListaNotasAdapter extends RecyclerView.Adapter<ListaNotasAdapter.NotaViewHolder> {
 
-    private List<Nota> notas;
-    private Context context;
+    private final List<Nota> notas;
+    private final Context context;
 
     public ListaNotasAdapter(Context context, List<Nota> notas) {
         this.context = context;
@@ -111,7 +111,7 @@ public class ListaNotasAdapter extends RecyclerView.Adapter<ListaNotasAdapter.No
 
     Por ser a abordagem mais utilizada e pelo fato do seu uso ser restrito ao Adapter;
     portanto, não há necessidade de criá-la de forma pública, para que fique acessível por fora.
-    
+
     Mas fique à vontade para criar um arquivo à parte, se preferir.
      */
     class NotaViewHolder extends RecyclerView.ViewHolder {

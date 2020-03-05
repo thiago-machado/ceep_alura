@@ -21,7 +21,11 @@ public class ListaNotasActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lista_notas);
 
-        RecyclerView listaNotas = findViewById(R.id.lista_notas_recycler_view);
+        List<Nota> todasNotas = configuraNotasExemplo();
+        configuraRecyclerView(todasNotas);
+    }
+
+    private List<Nota> configuraNotasExemplo() {
 
         NotaDAO dao = new NotaDAO();
 
@@ -29,21 +33,38 @@ public class ListaNotasActivity extends AppCompatActivity {
             dao.insere(new Nota("Título " + i, "Descrição " + i));
         }
 
-        List<Nota> todasNotas = dao.todos();
+        return dao.todos();
+    }
 
-        listaNotas.setAdapter(new ListaNotasAdapter(this, todasNotas));
+    private void configuraRecyclerView(List<Nota> todasNotas) {
 
+        RecyclerView listaNotas = findViewById(R.id.lista_notas_recycler_view);
+        configuraAdapter(todasNotas, listaNotas);
         /*
-        O layout não será apresentado exatamente da forma definida em item_nota.
-        Levando isso em consideração, adicionaremos um Layout Manager (Gerenciador de Layout, em português)
-        e a partir do gerenciador apresentaremos a View.
-
-        Por padrão, o RecyclerView implementa alguns Layout Managers.
-        Utilizaremos LinearLayoutManager, que é bem similar ao do ListView.
-        Ele segue o padrão de preencher a largura da tela, criando o aspecto
-        visual que conferimos inicialmente.
+        A configuração do LayoutManager está sendo definida agora no layout.xml
+        com o atributo: app:layoutManager="LinearLayoutManager"
          */
+        //configuraLayoutManager(listaNotas);
+
+    }
+
+    private void configuraLayoutManager(RecyclerView listaNotas) {
+
+    /*
+    O layout não será apresentado exatamente da forma definida em item_nota.
+    Levando isso em consideração, adicionaremos um Layout Manager (Gerenciador de Layout, em português)
+    e a partir do gerenciador apresentaremos a View.
+
+    Por padrão, o RecyclerView implementa alguns Layout Managers.
+    Utilizaremos LinearLayoutManager, que é bem similar ao do ListView.
+    Ele segue o padrão de preencher a largura da tela, criando o aspecto
+    visual que conferimos inicialmente.
+     */
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         listaNotas.setLayoutManager(layoutManager);
+    }
+
+    private void configuraAdapter(List<Nota> todasNotas, RecyclerView listaNotas) {
+        listaNotas.setAdapter(new ListaNotasAdapter(this, todasNotas));
     }
 }
