@@ -17,10 +17,13 @@ import br.com.totustuus.ceep_alura.dao.NotaDAO;
 import br.com.totustuus.ceep_alura.model.Nota;
 import br.com.totustuus.ceep_alura.ui.recyclerview.adapter.ListaNotasAdapter;
 
+import static br.com.totustuus.ceep_alura.ui.activity.NotaActivityConstantes.CHAVE_NOTA;
+import static br.com.totustuus.ceep_alura.ui.activity.NotaActivityConstantes.CODIGO_REQUISICAO_INSERE_NOTA;
+import static br.com.totustuus.ceep_alura.ui.activity.NotaActivityConstantes.CODIGO_RESULTADO_NOTA_CRIADA;
+
 public class ListaNotasActivity extends AppCompatActivity {
 
     private ListaNotasAdapter listaNotasAdapter;
-    private List<Nota> todasNotas;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,15 +31,28 @@ public class ListaNotasActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lista_notas);
 
-        todasNotas = configuraNotasExemplo();
+        List<Nota> todasNotas = pegaTodasNotas();
+        //List<Nota> todasNotas = configuraNotasExemplo();
+
         configuraRecyclerView(todasNotas);
+        botaoInsereNota();
+    }
+
+    private void botaoInsereNota() {
 
         TextView botaoInsereNota = findViewById(R.id.lista_notas_insere_nota);
+
         botaoInsereNota.setOnClickListener(new View.OnClickListener() {
+
             @Override
             public void onClick(View v) {
+                chamaFormularioNotaAcitivity();
+            }
+        });
+    }
 
-                Intent iniciaFormularioNota = new Intent( ListaNotasActivity.this, FormularioNotaActivity.class);
+    private void chamaFormularioNotaAcitivity() {
+        Intent iniciaFormularioNota = new Intent( ListaNotasActivity.this, FormularioNotaActivity.class);
 
                 /*
                 Além de iniciar, podemos indicar que queremos um retorno também.
@@ -51,9 +67,12 @@ public class ListaNotasActivity extends AppCompatActivity {
                 ser aleatório. A princípio, definiremos com 1, para identificarmos a ação com facilidade.
                 Adiante, utilizaremos outras boas técnicas para melhorarmos o padrão desse tipo de código.
                  */
-                startActivityForResult(iniciaFormularioNota, 1);
-            }
-        });
+        startActivityForResult(iniciaFormularioNota, CODIGO_REQUISICAO_INSERE_NOTA);
+    }
+
+    private List<Nota> pegaTodasNotas() {
+        NotaDAO dao = new NotaDAO();
+        return dao.todos();
     }
 
     /*
@@ -73,13 +92,33 @@ public class ListaNotasActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
 
         // verificando se requestCode é 1, se o resultCode é 2 e se possui o "extra" chamado "nota"
-        if(requestCode == 1 && resultCode == 2 && data.hasExtra("nota")) {
-            Nota nota = (Nota) data.getSerializableExtra("nota");
-            new NotaDAO().insere(nota);
-            listaNotasAdapter.adiciona(nota);
+        if(isResultadoComNota(requestCode, resultCode, data)) {
+            Nota nota = (Nota) data.getSerializableExtra(CHAVE_NOTA);
+            adiciona(nota);
         }
 
         super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    private void adiciona(Nota nota) {
+        new NotaDAO().insere(nota);
+        listaNotasAdapter.adiciona(nota);
+    }
+
+    private boolean isResultadoComNota(int requestCode, int resultCode, @Nullable Intent data) {
+        return isCodReqInsereNota(requestCode) && isCodResNotaCriada(resultCode) && hasNota(data);
+    }
+
+    private boolean hasNota(@Nullable Intent data) {
+        return data.hasExtra(CHAVE_NOTA);
+    }
+
+    private boolean isCodResNotaCriada(int resultCode) {
+        return resultCode == CODIGO_RESULTADO_NOTA_CRIADA;
+    }
+
+    private boolean isCodReqInsereNota(int requestCode) {
+        return requestCode == CODIGO_REQUISICAO_INSERE_NOTA;
     }
 
     @Override
@@ -95,8 +134,8 @@ public class ListaNotasActivity extends AppCompatActivity {
             dao.insere(new Nota("Título " + i, "Descrição " + i));
         }*/
 
-        dao.insere(new Nota("M.P.I. Comunismo", "Esse livro descreve as farças do Comunismo"));
-        dao.insere(new Nota("A Santa Inquisição", "A verdadeira história"));
+        /*dao.insere(new Nota("M.P.I. Comunismo", "Esse livro descreve as farças do Comunismo"));
+        dao.insere(new Nota("A Santa Inquisição", "A verdadeira história"));*/
 
         return dao.todos();
     }
