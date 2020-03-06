@@ -140,4 +140,31 @@ public class ListaNotasAdapter extends RecyclerView.Adapter<ListaNotasAdapter.No
         }
 
     }
+
+    /*
+    Pegaremos a referência da lista por meio de notas, e adicionaremos a nova com add(nota).
+    Após a adição, notificaremos o Adapter da alteração, da mesma forma que fizemos anteriormente.
+
+    Qualquer manipulação em cima da lista — o chamado dataset do Adapter — precisa ser notificada.
+    Sendo assim, acrescentaremos notifyDataSetChanged().
+
+    Assim, o Adapter torna-se responsável por se notificar, e por todos os processos.
+    Com a lógica implementada, a nota é recebida, o Adapter a serializa e se altera.
+
+    Essa abordagem é bem bacana pois não temos que limpar a lista e adicionar todos os elementos de uma vez.
+    São executados somente os processos necessários para uma nota ser adicionada ao Adapter.
+     */
+    public void adiciona(Nota nota) {
+        notas.add(nota);
+
+        /*
+         Adapter vai analisar a lsita que tem, o que mudou e renderizar as views com base no que mudou.
+
+         O método adicionado fará com que o Adapter notifique as alterações.
+         No momento em que é chamado, ele analisa a lista interna, o que foi alterado e o que
+         deve ser renderizado, conforme as mudanças conferidas.
+
+         */
+        notifyDataSetChanged();
+    }
 }

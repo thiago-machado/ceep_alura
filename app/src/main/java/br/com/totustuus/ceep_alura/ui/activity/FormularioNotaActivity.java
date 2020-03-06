@@ -1,5 +1,6 @@
 package br.com.totustuus.ceep_alura.ui.activity;
 
+import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -34,8 +35,26 @@ public class FormularioNotaActivity extends AppCompatActivity {
             EditText descricao = findViewById(R.id.formulario_nota_descricao);
             Nota notaCriada = new Nota(titulo.getText().toString(), descricao.getText().toString());
 
-            new NotaDAO().insere(notaCriada);
+                        /*
+            Para indicar que o resultado será enviado, adicionaremos setResult() antes de finalizá-la (finish).
+            Como parâmetro, vamos inserir um resultCode ("Código de Resultado", em português).
+            Assim, o combinaremos a requestCode, obtendo a confirmação de que a ação de devolver uma resposta foi atendida.
 
+            A princípio, aplicaremos resultCode: 2 e Intent como parâmetros para o envio da nota,
+            pois além da requisição, é necessário enviar os dados coletados em notaCriada.
+            O parâmetro Intent permitirá a transição de informações, no caso objetos, via Extra.
+
+            Abaixo, faremos com que seja adicionado um Extra, com putExtra(), e definiremos como
+            parâmetro uma string para identificar o que estamos enviando, neste caso uma nota.
+            Feito isso, a nota criada será enviada com notaCriada como sendo o segundo parâmetro.
+
+            Em seguida, dicionaremos resultadoInsercao como segundo parâmetro de setResult().
+             */
+
+            Intent intent = new Intent();
+            intent.putExtra("nota", notaCriada);
+
+            setResult(2, intent);
             // finish() para finalizar a Activity
             finish();
         }

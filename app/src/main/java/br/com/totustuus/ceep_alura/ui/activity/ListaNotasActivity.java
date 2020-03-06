@@ -1,6 +1,7 @@
 package br.com.totustuus.ceep_alura.ui.activity;
 
 import android.content.Intent;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -8,6 +9,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.TextView;
 
+import java.io.Serializable;
 import java.util.List;
 
 import br.com.totustuus.ceep_alura.R;
@@ -33,40 +35,56 @@ public class ListaNotasActivity extends AppCompatActivity {
         botaoInsereNota.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
                 Intent iniciaFormularioNota = new Intent( ListaNotasActivity.this, FormularioNotaActivity.class);
-                startActivity(iniciaFormularioNota);
+
+                /*
+                Além de iniciar, podemos indicar que queremos um retorno também.
+
+                A partir de startActivityForResult(), teremos a capacidade de identificar que estamos
+                iniciando uma Activity e esperando um resultado. Além de enviarmos uma Intent,
+                no entanto, obrigatoriamente precisamos enviar outro parâmetro: um inteiro
+                chamado de requestCode ("Código de Requisição", em português).
+                Ele confirmará que a requisição foi atendida.
+
+                Sendo assim, após iniciaFormularioNota, adicionaremos vírgula (,) e um número inteiro, que pode
+                ser aleatório. A princípio, definiremos com 1, para identificarmos a ação com facilidade.
+                Adiante, utilizaremos outras boas técnicas para melhorarmos o padrão desse tipo de código.
+                 */
+                startActivityForResult(iniciaFormularioNota, 1);
             }
         });
     }
 
+    /*
+    Agora que estamos enviando o resultado em ListaNotasActivity.java, além de enviarmos somente
+    a inicialização que espera um resultado, precisamos implementar o método que ficará atento
+    ao que é recebido. Esse método é o onActivityResult().
+
+    Ele será responsável pela identificação da requisição que fizemos e se ela é atendida
+    conforme o esperado.
+
+    Os parâmetros recebidos por ela são justamente aqueles com os quais esperávamos lidar:
+    1) requestCode, ou código de requisição;
+    2) resultCode, ou código de resultado;
+    3) data, ou o tipo de dado enviado.
+     */
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+
+        // verificando se requestCode é 1, se o resultCode é 2 e se possui o "extra" chamado "nota"
+        if(requestCode == 1 && resultCode == 2 && data.hasExtra("nota")) {
+            Nota nota = (Nota) data.getSerializableExtra("nota");
+            new NotaDAO().insere(nota);
+            listaNotasAdapter.adiciona(nota);
+        }
+
+        super.onActivityResult(requestCode, resultCode, data);
+    }
+
     @Override
     protected void onResume() {
-
         super.onResume();
-
-        /*
-        Sabendo que haverá uma atualização e que queremos nos certificar de que estamos captando dados
-        novos, iremos inserir clear() para limparmos os dados.
-        Na sequência, adicionaremos os novos elementos por meio de addAll().
-
-        Dessa forma, pegamos a mesma lista enviada ao Adapter, a qual limparemos.
-        Adicionaremos todos os dados, garantindo que estamos enviando todos aqueles que
-        estão contidos no banco, pois se não limparmos a lista, as notas que já estão
-        nela — como as que inserimos de exemplo — serão mantidas.
-         */
-        NotaDAO notaDAO = new NotaDAO();
-        todasNotas.clear();
-        todasNotas.addAll(notaDAO.todos());
-
-        /*
-         Adapter vai analisar a lsita que tem, o que mudou e renderizar as views com base no que mudou.
-
-         O método adicionado fará com que o Adapter notifique as alterações.
-         No momento em que é chamado, ele analisa a lista interna, o que foi alterado e o que
-         deve ser renderizado, conforme as mudanças conferidas.
-
-         */
-        listaNotasAdapter.notifyDataSetChanged();
     }
 
     private List<Nota> configuraNotasExemplo() {
