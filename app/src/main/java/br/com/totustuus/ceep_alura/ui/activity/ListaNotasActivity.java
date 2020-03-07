@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
@@ -21,8 +20,9 @@ import br.com.totustuus.ceep_alura.ui.recyclerview.adapter.listener.OnItemClickL
 
 import static br.com.totustuus.ceep_alura.ui.activity.NotaActivityConstantes.CHAVE_NOTA;
 import static br.com.totustuus.ceep_alura.ui.activity.NotaActivityConstantes.CHAVE_POSICAO;
+import static br.com.totustuus.ceep_alura.ui.activity.NotaActivityConstantes.CODIGO_REQUISICAO_EDITA_NOTA;
 import static br.com.totustuus.ceep_alura.ui.activity.NotaActivityConstantes.CODIGO_REQUISICAO_INSERE_NOTA;
-import static br.com.totustuus.ceep_alura.ui.activity.NotaActivityConstantes.CODIGO_RESULTADO_NOTA_CRIADA;
+import static br.com.totustuus.ceep_alura.ui.activity.NotaActivityConstantes.POSICAO_INVALIDA;
 
 public class ListaNotasActivity extends AppCompatActivity {
 
@@ -49,12 +49,12 @@ public class ListaNotasActivity extends AppCompatActivity {
 
             @Override
             public void onClick(View v) {
-                chamaFormularioNotaAcitivity();
+                chamaFormularioNotaAcitivityAdicao();
             }
         });
     }
 
-    private void chamaFormularioNotaAcitivity() {
+    private void chamaFormularioNotaAcitivityAdicao() {
         Intent iniciaFormularioNota = new Intent( ListaNotasActivity.this, FormularioNotaActivity.class);
         startActivityForResult(iniciaFormularioNota, CODIGO_REQUISICAO_INSERE_NOTA);
     }
@@ -82,21 +82,53 @@ public class ListaNotasActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
 
         // verificando se requestCode é 1, se o resultCode é 2 e se possui o "extra" chamado "nota"
-        if(isResultadoComNota(requestCode, resultCode, data)) { // INSERCAO DE UM NOVO REGISTRO
-            Nota nota = (Nota) data.getSerializableExtra(CHAVE_NOTA);
-            adiciona(nota);
-        } else if(requestCode == 2 &&
-                resultCode == CODIGO_RESULTADO_NOTA_CRIADA &&
-                data.hasExtra(CHAVE_NOTA) && data.hasExtra(CHAVE_POSICAO)) { // EDICAO DE UM REGISTRO
+        if(isResultadoInsereNota(requestCode, data)) { // INSERCAO DE UM NOVO REGISTRO
 
-            Nota nota = (Nota) data.getSerializableExtra(CHAVE_NOTA);
-            int posicao = data.getIntExtra(CHAVE_POSICAO, -1);
+            /*
+            Na documentação do Android, é recomendado que a verificação do resultCode seja realizada
+            separada das outras verificações.
+            Por que isso? Pelo seguinte motivo: pode acontecer de retornar a "nota", mas o "resultcode"
+            ser diferente de RESULT_OK. O reseultCode pode ser RESULT_CANCELED, por exemplo.
+            Ou seja, nos retornou a nota, mas o resultado é diferente de OK, sinalzando que podemos
+            tomar uma atitude quanto a isso.
+             */
+            if(isCodResOK(resultCode)) {
+                Nota nota = (Nota) data.getSerializableExtra(CHAVE_NOTA);
+                adiciona(nota);
+            }
 
-            new NotaDAO().altera(posicao, nota);
-            adapter.altera(posicao, nota);
+        } else if(isResultadoEditaNota(requestCode, data)) { // EDICAO DE UM REGISTRO
+
+            if(isCodResOK(resultCode)) {
+                Nota nota = (Nota) data.getSerializableExtra(CHAVE_NOTA);
+                int posicao = data.getIntExtra(CHAVE_POSICAO, POSICAO_INVALIDA);
+
+                if (isPosicaoValida(posicao)) {
+                    edita(nota, posicao);
+                } else {
+                    Toast.makeText(this, "Ocorreu um problema na alteração da nota", Toast.LENGTH_LONG).show();
+                }
+            }
         }
 
         super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    private void edita(Nota nota, int posicao) {
+        new NotaDAO().altera(posicao, nota);
+        adapter.altera(posicao, nota);
+    }
+
+    private boolean isPosicaoValida(int posicao) {
+        return posicao > POSICAO_INVALIDA;
+    }
+
+    private boolean isResultadoEditaNota(int requestCode, @Nullable Intent data) {
+        return isCodReqEditaNota(requestCode) && hasNota(data);
+    }
+
+    private boolean isCodReqEditaNota(int requestCode) {
+        return requestCode == CODIGO_REQUISICAO_EDITA_NOTA;
     }
 
     private void adiciona(Nota nota) {
@@ -104,16 +136,16 @@ public class ListaNotasActivity extends AppCompatActivity {
         adapter.adiciona(nota);
     }
 
-    private boolean isResultadoComNota(int requestCode, int resultCode, @Nullable Intent data) {
-        return isCodReqInsereNota(requestCode) && isCodResNotaCriada(resultCode) && hasNota(data);
+    private boolean isResultadoInsereNota(int requestCode, @Nullable Intent data) {
+        return isCodReqInsereNota(requestCode) && hasNota(data);
     }
 
     private boolean hasNota(@Nullable Intent data) {
         return data.hasExtra(CHAVE_NOTA);
     }
 
-    private boolean isCodResNotaCriada(int resultCode) {
-        return resultCode == CODIGO_RESULTADO_NOTA_CRIADA;
+    private boolean isCodResOK(int resultCode) {
+        return resultCode == RESULT_OK;
     }
 
     private boolean isCodReqInsereNota(int requestCode) {
@@ -141,22 +173,6 @@ public class ListaNotasActivity extends AppCompatActivity {
         configuraAdapter(todasNotas, listaNotas);
     }
 
-    private void configuraLayoutManager(RecyclerView listaNotas) {
-
-    /*
-    O layout não será apresentado exatamente da forma definida em item_nota.
-    Levando isso em consideração, adicionaremos um Layout Manager (Gerenciador de Layout, em português)
-    e a partir do gerenciador apresentaremos a View.
-
-    Por padrão, o RecyclerView implementa alguns Layout Managers.
-    Utilizaremos LinearLayoutManager, que é bem similar ao do ListView.
-    Ele segue o padrão de preencher a largura da tela, criando o aspecto
-    visual que conferimos inicialmente.
-     */
-        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
-        listaNotas.setLayoutManager(layoutManager);
-    }
-
     private void configuraAdapter(List<Nota> todasNotas, RecyclerView listaNotas) {
 
         adapter = new ListaNotasAdapter(this, todasNotas);
@@ -170,16 +186,19 @@ public class ListaNotasActivity extends AppCompatActivity {
 
             @Override
             public void onItemClick(Nota nota, int posicao) {
-
-                Log.i("click", "onclick do listaNotasAdapter...");
-
-                Intent abreFormularioNota = new Intent(ListaNotasActivity.this, FormularioNotaActivity.class);
-                abreFormularioNota.putExtra(CHAVE_NOTA, nota);
-                abreFormularioNota.putExtra(CHAVE_POSICAO, posicao);
-
-                startActivityForResult(abreFormularioNota, 2);
-
+                chamaFormularioNotaActivityParaAlteracao(nota, posicao);
             }
         });
+    }
+
+    private void chamaFormularioNotaActivityParaAlteracao(Nota nota, int posicao) {
+
+        Log.i("click", "onclick do listaNotasAdapter...");
+
+        Intent abreFormularioNota = new Intent(ListaNotasActivity.this, FormularioNotaActivity.class);
+        abreFormularioNota.putExtra(CHAVE_NOTA, nota);
+        abreFormularioNota.putExtra(CHAVE_POSICAO, posicao);
+
+        startActivityForResult(abreFormularioNota, CODIGO_REQUISICAO_EDITA_NOTA);
     }
 }

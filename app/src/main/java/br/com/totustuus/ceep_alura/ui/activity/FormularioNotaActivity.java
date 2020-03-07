@@ -10,19 +10,20 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import java.io.Serializable;
+import org.w3c.dom.Text;
 
 import br.com.totustuus.ceep_alura.R;
-import br.com.totustuus.ceep_alura.dao.NotaDAO;
 import br.com.totustuus.ceep_alura.model.Nota;
 
 import static br.com.totustuus.ceep_alura.ui.activity.NotaActivityConstantes.CHAVE_NOTA;
 import static br.com.totustuus.ceep_alura.ui.activity.NotaActivityConstantes.CHAVE_POSICAO;
-import static br.com.totustuus.ceep_alura.ui.activity.NotaActivityConstantes.CODIGO_RESULTADO_NOTA_CRIADA;
+import static br.com.totustuus.ceep_alura.ui.activity.NotaActivityConstantes.POSICAO_INVALIDA;
 
 public class FormularioNotaActivity extends AppCompatActivity {
 
-    private int posicao;
+    private int posicao = POSICAO_INVALIDA;
+    private TextView titulo;
+    private TextView descricao;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,10 +31,11 @@ public class FormularioNotaActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_formulario_nota);
 
+        inicializaCampos();
+
         Intent dadosRecebidos = getIntent();
 
-        if(dadosRecebidos.hasExtra(CHAVE_NOTA) &&
-                dadosRecebidos.hasExtra(CHAVE_POSICAO)){
+        if(dadosRecebidos.hasExtra(CHAVE_NOTA)){
 
             Nota notaRecebida = (Nota) dadosRecebidos.getSerializableExtra(CHAVE_NOTA);
 
@@ -42,14 +44,20 @@ public class FormularioNotaActivity extends AppCompatActivity {
             esperamos não seja recebida. Para este caso usaremos o valor -1, que indicará que a
             informação da posicao é inválida, pois não se trata de um índice válido dentro da lista.
              */
-            posicao = dadosRecebidos.getIntExtra(CHAVE_POSICAO, -1);
+            posicao = dadosRecebidos.getIntExtra(CHAVE_POSICAO, POSICAO_INVALIDA);
 
-
-            TextView titulo = findViewById(R.id.formulario_nota_titulo);
-            titulo.setText(notaRecebida.getTitulo());
-            TextView descricao = findViewById(R.id.formulario_nota_descricao);
-            descricao.setText(notaRecebida.getDescricao());
+            preencheCampos(notaRecebida);
         }
+    }
+
+    private void preencheCampos(Nota notaRecebida) {
+        titulo.setText(notaRecebida.getTitulo());
+        descricao.setText(notaRecebida.getDescricao());
+    }
+
+    private void inicializaCampos() {
+        titulo = findViewById(R.id.formulario_nota_titulo);
+        descricao = findViewById(R.id.formulario_nota_descricao);
     }
 
     @Override
@@ -94,12 +102,10 @@ public class FormularioNotaActivity extends AppCompatActivity {
         intent.putExtra(CHAVE_NOTA, notaCriada);
         intent.putExtra(CHAVE_POSICAO, posicao);
 
-        setResult(CODIGO_RESULTADO_NOTA_CRIADA, intent);
+        setResult(RESULT_OK, intent);
     }
 
     private Nota criaNota() {
-        EditText titulo = findViewById(R.id.formulario_nota_titulo);
-        EditText descricao = findViewById(R.id.formulario_nota_descricao);
         return new Nota(titulo.getText().toString(), descricao.getText().toString());
     }
 
