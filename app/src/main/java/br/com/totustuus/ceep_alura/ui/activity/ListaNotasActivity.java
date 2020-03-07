@@ -6,8 +6,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.Serializable;
 import java.util.List;
@@ -16,6 +18,7 @@ import br.com.totustuus.ceep_alura.R;
 import br.com.totustuus.ceep_alura.dao.NotaDAO;
 import br.com.totustuus.ceep_alura.model.Nota;
 import br.com.totustuus.ceep_alura.ui.recyclerview.adapter.ListaNotasAdapter;
+import br.com.totustuus.ceep_alura.ui.recyclerview.adapter.listener.OnItemClickListener;
 
 import static br.com.totustuus.ceep_alura.ui.activity.NotaActivityConstantes.CHAVE_NOTA;
 import static br.com.totustuus.ceep_alura.ui.activity.NotaActivityConstantes.CODIGO_REQUISICAO_INSERE_NOTA;
@@ -33,6 +36,9 @@ public class ListaNotasActivity extends AppCompatActivity {
 
         List<Nota> todasNotas = pegaTodasNotas();
         //List<Nota> todasNotas = configuraNotasExemplo();
+        for(int i = 0; i < 10; i++) {
+            todasNotas.add(new Nota("Exemplo número " + i, "Descrição de teste número " + i));
+        }
 
         configuraRecyclerView(todasNotas);
         botaoInsereNota();
@@ -134,23 +140,15 @@ public class ListaNotasActivity extends AppCompatActivity {
             dao.insere(new Nota("Título " + i, "Descrição " + i));
         }*/
 
-        /*dao.insere(new Nota("M.P.I. Comunismo", "Esse livro descreve as farças do Comunismo"));
-        dao.insere(new Nota("A Santa Inquisição", "A verdadeira história"));*/
+        dao.insere(new Nota("M.P.I. Comunismo", "Esse livro descreve as farças do Comunismo"));
+        dao.insere(new Nota("A Santa Inquisição", "A verdadeira história"));
 
         return dao.todos();
     }
 
     private void configuraRecyclerView(List<Nota> todasNotas) {
-
         RecyclerView listaNotas = findViewById(R.id.lista_notas_recycler_view);
         configuraAdapter(todasNotas, listaNotas);
-
-        /*
-        A configuração do LayoutManager está sendo definida agora no layout.xml
-        com o atributo: app:layoutManager="LinearLayoutManager"
-         */
-        //configuraLayoutManager(listaNotas);
-
     }
 
     private void configuraLayoutManager(RecyclerView listaNotas) {
@@ -172,5 +170,18 @@ public class ListaNotasActivity extends AppCompatActivity {
     private void configuraAdapter(List<Nota> todasNotas, RecyclerView listaNotas) {
         listaNotasAdapter = new ListaNotasAdapter(this, todasNotas);
         listaNotas.setAdapter(listaNotasAdapter);
+
+        /*
+        Implementando uma ação de click para cada ViewHolder.
+        Ler a descrição dessa implementação em NotaViewHolder.
+         */
+        listaNotasAdapter.setOnItemClickListener(new OnItemClickListener() {
+
+            @Override
+            public void onItemClick(Nota nota) {
+                Log.i("click", "onclick do listaNotasAdapter...");
+                Toast.makeText(ListaNotasActivity.this, nota.getTitulo(), Toast.LENGTH_LONG).show();
+            }
+        });
     }
 }

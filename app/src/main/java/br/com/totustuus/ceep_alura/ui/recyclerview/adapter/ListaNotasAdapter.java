@@ -3,6 +3,7 @@ package br.com.totustuus.ceep_alura.ui.recyclerview.adapter;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,6 +13,7 @@ import java.util.List;
 
 import br.com.totustuus.ceep_alura.R;
 import br.com.totustuus.ceep_alura.model.Nota;
+import br.com.totustuus.ceep_alura.ui.recyclerview.adapter.listener.OnItemClickListener;
 
 /*
 Algo importante e que deve ficar bem claro é que o cast que aplicamos é opcional.
@@ -34,21 +36,35 @@ public class ListaNotasAdapter extends RecyclerView.Adapter<ListaNotasAdapter.No
     private final List<Nota> notas;
     private final Context context;
 
+    /*
+    Criamos essa interface para que fosse possível a implementação de qualquer ação
+    de clique (em cada ViewHolder) para quem utilizar nosso ListaNotasAdapter.
+     */
+    private OnItemClickListener onItemClickListener;
+
     public ListaNotasAdapter(Context context, List<Nota> notas) {
         this.context = context;
         this.notas = notas;
     }
 
     /*
-    Cria as Views diretamente. A diferença é que
-    serão criados ViewHolders — lembrando que trabalharemos com Views
-    limitadas.
-
-    A princípio, quando enviamos os itens, onCreateViewHolder() será chamado,
-    método responsável pela criação de visualizações, ou os ViewHolders,
-    que representarão as informações em contêineres e limitarão a
-    quantidade de Views durante a implementação.
+    Quem utiliza nosso Adapter, precisa chamar esse método para poder implementar uma ação
+    de click para cada ViewHolder.
      */
+    public void setOnItemClickListener(OnItemClickListener onItemClickListener) {
+        this.onItemClickListener = onItemClickListener;
+    }
+
+    /*
+        Cria as Views diretamente. A diferença é que
+        serão criados ViewHolders — lembrando que trabalharemos com Views
+        limitadas.
+
+        A princípio, quando enviamos os itens, onCreateViewHolder() será chamado,
+        método responsável pela criação de visualizações, ou os ViewHolders,
+        que representarão as informações em contêineres e limitarão a
+        quantidade de Views durante a implementação.
+         */
     @NonNull
     @Override
     public ListaNotasAdapter.NotaViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int i) {
@@ -118,52 +134,90 @@ public class ListaNotasAdapter extends RecyclerView.Adapter<ListaNotasAdapter.No
 
         private final TextView titulo;
         private final TextView descricao;
+        private Nota nota;
 
         /*
         A implementação de NotaViewHolder recebe View, que representa
-        cada item da View (itemView) e chama super para enviar itemView
-        ao ViewHolder do RecyclerView.
+        cada item da View (itemView) e chama super para enviar itemView ao ViewHolder do RecyclerView.
 
         Esse construtor será chamado toda vez que onCreateViewHolder()
-        for chamado. Ou seja, será chamado pouquíssimas vezes, já que
-        o número de ViewHolder's é limitado.
+        for chamado. Ou seja, será chamado pouquíssimas vezes, já que o número de ViewHolder's é limitado.
          */
         public NotaViewHolder(@NonNull View itemView) {
             super(itemView);
+
+            Log.i("viewholder", "criando view holder...");
             titulo = itemView.findViewById(R.id.item_nota_titulo);
             descricao = itemView.findViewById(R.id.item_nota_descricao);
+
+            /*
+            Podemos muito bem fazer a implememtação de click nesse método
+            onClick() de itemView.setOnClickListener.
+
+            Contudo, essa implementação ficaria engessada, não permitindo que
+            outras ações fossem permitidas.
+
+            Por exemplo: se tivermos duas Activities e ambas
+            utilizassem este nosso Adapter, mas cuja função de click fosse
+            diferente em cada caso, isso não seria possível. Pois já implementamos
+            a ação de click dentro do nosso Adapter.
+
+            Para resolver isso, basta criarmos uma interface (de nome OnItemClickListener
+            no nosso caso), com uma função de click (onItemClick no nosso caso).
+
+            Com a interface criada, criamos um atributo da mesma no nosso Apdater e
+            fazemos a chamada do método no nosso onClick().
+
+            Precisamos permitir para quem utiilizar nosso Adapter, que possa implementar nosso
+            OnItemClickListener. Para isso, basta criarmos no nosso Adapter um método setter.
+
+            Feito isso, quem for utilizar nosso Adapter, poderá chamar o setter do nosso
+            OnItemClickListener e implementar a ação onClick(). Ou seja, QUEM CHAMA é quem implementa
+            a ação, possibilitando maior diversificação de ação.
+             */
+            Log.i("viewholder", "nota: " + nota);
+            itemView.setOnClickListener(new View.OnClickListener() {
+
+                /*
+                A implementação de onclick pode ficar aqui pois já atende a todas as views.
+                Essa nota à princípio será nula, mas com o processo de bind, ela deixará de ser nula.
+                 */
+                @Override
+                public void onClick(View v) {
+                    Log.i("click", "onclick do ViewHolder...");
+                    onItemClickListener.onItemClick(nota);
+                }
+            });
         }
 
+        /*
+        No momento em que chamar vincula, pegamos a nota e atribuímos ao nosso atributo "nota"
+        do ViewHolder.
+        E dessa maneira, temos acesso a nota no onItemClick.
+        Então, toda vez que o processo de bind for chamado, vamos enviar a nota com base na posição,
+         da maneira que esperamos.
+
+         Perceba que a nota é enviada por meio do atributo do ViewHolder e, no momento que é
+         necessário mudar a referência da mesma, é feita outra atribuição no bind.
+         */
         public void vincula(Nota nota) {
+
+            this.nota = nota;
+
+            Log.i("viewholder", "realizando bind...");
+            Log.i("viewholder", "bind nota: " + nota);
+
             titulo.setText(nota.getTitulo());
             descricao.setText(nota.getDescricao());
         }
 
     }
 
-    /*
-    Pegaremos a referência da lista por meio de notas, e adicionaremos a nova com add(nota).
-    Após a adição, notificaremos o Adapter da alteração, da mesma forma que fizemos anteriormente.
-
-    Qualquer manipulação em cima da lista — o chamado dataset do Adapter — precisa ser notificada.
-    Sendo assim, acrescentaremos notifyDataSetChanged().
-
-    Assim, o Adapter torna-se responsável por se notificar, e por todos os processos.
-    Com a lógica implementada, a nota é recebida, o Adapter a serializa e se altera.
-
-    Essa abordagem é bem bacana pois não temos que limpar a lista e adicionar todos os elementos de uma vez.
-    São executados somente os processos necessários para uma nota ser adicionada ao Adapter.
-     */
     public void adiciona(Nota nota) {
         notas.add(nota);
 
         /*
          Adapter vai analisar a lsita que tem, o que mudou e renderizar as views com base no que mudou.
-
-         O método adicionado fará com que o Adapter notifique as alterações.
-         No momento em que é chamado, ele analisa a lista interna, o que foi alterado e o que
-         deve ser renderizado, conforme as mudanças conferidas.
-
          */
         notifyDataSetChanged();
     }
