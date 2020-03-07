@@ -1,5 +1,7 @@
 package br.com.totustuus.ceep_alura.dao;
 
+import android.util.Log;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -9,7 +11,7 @@ import br.com.totustuus.ceep_alura.model.Nota;
 
 public class NotaDAO {
 
-    private final ArrayList<Nota> notas = new ArrayList<>();
+    private static final ArrayList<Nota> notas = new ArrayList<>();
 
     public List<Nota> todos() {
         return (List<Nota>) notas.clone();
@@ -20,6 +22,7 @@ public class NotaDAO {
     }
 
     public void altera(int posicao, Nota nota) {
+        Log.i("notas", "DAO notas size: " + notas.size());
         notas.set(posicao, nota);
     }
 

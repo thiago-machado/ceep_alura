@@ -45,6 +45,7 @@ public class ListaNotasAdapter extends RecyclerView.Adapter<ListaNotasAdapter.No
     public ListaNotasAdapter(Context context, List<Nota> notas) {
         this.context = context;
         this.notas = notas;
+        Log.i("notas", "construtor adapter notas size: " + notas.size());
     }
 
     /*
@@ -117,6 +118,12 @@ public class ListaNotasAdapter extends RecyclerView.Adapter<ListaNotasAdapter.No
         return notas.size();
     }
 
+    public void altera(int posicao, Nota nota) {
+        Log.i("notas", "altera adapter notas size: " + notas.size());
+        notas.set(posicao, nota);
+        notifyDataSetChanged();
+    }
+
     /*
     Note que os métodos citados giram em torno de ViewHolder.
     Portanto, nosso primeiro passo será implementá-lo.
@@ -181,11 +188,23 @@ public class ListaNotasAdapter extends RecyclerView.Adapter<ListaNotasAdapter.No
                 /*
                 A implementação de onclick pode ficar aqui pois já atende a todas as views.
                 Essa nota à princípio será nula, mas com o processo de bind, ela deixará de ser nula.
+
+                A utilização do método getAdapterPosition() é uma das técnicas utilizadas
+                para acessar a posição dos elementos no RecyclerView.
+                Ou seja, através de getAdapterPosition(), o próprio ViewHolder sabe qual a posição dele.
+                Assim podemos pegar a posição dos elementos dentro do RecyclerView.
+
+                 Além do ViewHolder possuir as informações necessárias para manter as views,
+                 ele ainda possui dados sobre o relacionamento mantido com o adapter.
+
+                 Isso significa ele ele mesmo sabe sobre sua própria posição e possui um
+                 método específico para indicá-la.
                  */
                 @Override
                 public void onClick(View v) {
                     Log.i("click", "onclick do ViewHolder...");
-                    onItemClickListener.onItemClick(nota);
+                    Log.i("click", "posicao: " + getAdapterPosition());
+                    onItemClickListener.onItemClick(nota, getAdapterPosition());
                 }
             });
         }

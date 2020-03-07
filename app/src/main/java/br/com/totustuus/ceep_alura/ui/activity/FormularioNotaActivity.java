@@ -6,21 +6,50 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.EditText;
+import android.widget.TextView;
+
+import java.io.Serializable;
 
 import br.com.totustuus.ceep_alura.R;
 import br.com.totustuus.ceep_alura.dao.NotaDAO;
 import br.com.totustuus.ceep_alura.model.Nota;
 
 import static br.com.totustuus.ceep_alura.ui.activity.NotaActivityConstantes.CHAVE_NOTA;
+import static br.com.totustuus.ceep_alura.ui.activity.NotaActivityConstantes.CHAVE_POSICAO;
 import static br.com.totustuus.ceep_alura.ui.activity.NotaActivityConstantes.CODIGO_RESULTADO_NOTA_CRIADA;
 
 public class FormularioNotaActivity extends AppCompatActivity {
 
+    private int posicao;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_formulario_nota);
+
+        Intent dadosRecebidos = getIntent();
+
+        if(dadosRecebidos.hasExtra(CHAVE_NOTA) &&
+                dadosRecebidos.hasExtra(CHAVE_POSICAO)){
+
+            Nota notaRecebida = (Nota) dadosRecebidos.getSerializableExtra(CHAVE_NOTA);
+
+            /*
+            Quando utilizamos getInExtra() precisamos enviar um valor padrão caso a informação que
+            esperamos não seja recebida. Para este caso usaremos o valor -1, que indicará que a
+            informação da posicao é inválida, pois não se trata de um índice válido dentro da lista.
+             */
+            posicao = dadosRecebidos.getIntExtra(CHAVE_POSICAO, -1);
+
+
+            TextView titulo = findViewById(R.id.formulario_nota_titulo);
+            titulo.setText(notaRecebida.getTitulo());
+            TextView descricao = findViewById(R.id.formulario_nota_descricao);
+            descricao.setText(notaRecebida.getDescricao());
+        }
     }
 
     @Override
@@ -63,6 +92,7 @@ public class FormularioNotaActivity extends AppCompatActivity {
          */
         Intent intent = new Intent();
         intent.putExtra(CHAVE_NOTA, notaCriada);
+        intent.putExtra(CHAVE_POSICAO, posicao);
 
         setResult(CODIGO_RESULTADO_NOTA_CRIADA, intent);
     }
