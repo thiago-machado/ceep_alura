@@ -5,6 +5,7 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
@@ -17,6 +18,7 @@ import br.com.totustuus.ceep_alura.dao.NotaDAO;
 import br.com.totustuus.ceep_alura.model.Nota;
 import br.com.totustuus.ceep_alura.ui.recyclerview.adapter.ListaNotasAdapter;
 import br.com.totustuus.ceep_alura.ui.recyclerview.adapter.listener.OnItemClickListener;
+import br.com.totustuus.ceep_alura.ui.recyclerview.helper.callback.NotaItemTouchHlelperCallback;
 
 import static br.com.totustuus.ceep_alura.ui.activity.NotaActivityConstantes.CHAVE_NOTA;
 import static br.com.totustuus.ceep_alura.ui.activity.NotaActivityConstantes.CHAVE_POSICAO;
@@ -171,6 +173,30 @@ public class ListaNotasActivity extends AppCompatActivity {
     private void configuraRecyclerView(List<Nota> todasNotas) {
         RecyclerView listaNotas = findViewById(R.id.lista_notas_recycler_view);
         configuraAdapter(todasNotas, listaNotas);
+        configuraItemTouchHelper(listaNotas);
+
+    }
+
+    private void configuraItemTouchHelper(RecyclerView listaNotas) {
+        
+        /*
+        ItemTouchHelper lidará com o comportamento de toque de item.
+        Para poder definir os comportamentos de toque de item, ItemTouchHelper espera
+        que haja a implementação de um Callback, trata-se de uma entidade que ficará
+        responsável em fazer toda a configuração de movimento ou de deslize para ItemTouchHelper().
+
+        Com isso, conseguiremos definir a direção do deslizamento, e outros efeitos.
+        A partir do callback conseguiremos também tomar uma ação, pois o deslize neste
+        caso tem a função de apagar uma nota.
+         */
+        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new NotaItemTouchHlelperCallback(adapter));
+
+        /*
+        Criaremos um objeto de itemTouchHelper. A partir desse objeto teremos a capacidade de
+        anexar ou fixar os comportamentos com o auxílio do método attachToRecyclerView(),
+        que receberá como parâmetro listaNotas.
+         */
+        itemTouchHelper.attachToRecyclerView(listaNotas);
     }
 
     private void configuraAdapter(List<Nota> todasNotas, RecyclerView listaNotas) {
