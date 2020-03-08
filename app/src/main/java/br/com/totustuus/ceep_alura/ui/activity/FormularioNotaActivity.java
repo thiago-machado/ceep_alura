@@ -21,6 +21,8 @@ import static br.com.totustuus.ceep_alura.ui.activity.NotaActivityConstantes.POS
 
 public class FormularioNotaActivity extends AppCompatActivity {
 
+    public static final String TITULO_APPBAR_CADASTRO = "Cadastro";
+    public static final String TITULO_APPBAR_EDICAO = "Edição";
     private int posicao = POSICAO_INVALIDA;
     private TextView titulo;
     private TextView descricao;
@@ -31,12 +33,14 @@ public class FormularioNotaActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_formulario_nota);
 
+        setTitle(TITULO_APPBAR_CADASTRO);
         inicializaCampos();
 
         Intent dadosRecebidos = getIntent();
 
         if(dadosRecebidos.hasExtra(CHAVE_NOTA)){
 
+            setTitle(TITULO_APPBAR_EDICAO);
             Nota notaRecebida = (Nota) dadosRecebidos.getSerializableExtra(CHAVE_NOTA);
 
             /*

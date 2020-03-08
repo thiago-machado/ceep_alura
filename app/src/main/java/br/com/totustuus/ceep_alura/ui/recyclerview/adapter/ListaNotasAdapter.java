@@ -123,16 +123,39 @@ public class ListaNotasAdapter extends RecyclerView.Adapter<ListaNotasAdapter.No
         Log.i("notas", "altera adapter notas size: " + notas.size());
         notas.set(posicao, nota);
         notifyDataSetChanged();
+
+        /*
+         É indicada a posição em que ocorreu a mudança. Teríamos um efeito similar
+         na parte de movimentação . Contudo, como estamos fazendo a alteração em outra
+         Activity, não é necessário chamar esse método.
+         */
+        //notifyItemChanged(posicao);
     }
 
     public void remove(int posicao) {
         notas.remove(posicao);
-        notifyDataSetChanged();
+
+        //notifyDataSetChanged();
+        /*
+        Estamos notificando a remoção de um item a partir de uma posicao
+        e dessa forma será colocada uma transição mais fluida.
+        O notifyDataSetChanged() exerce bem sua função, mas a animação é muito rápida.
+         */
+        notifyItemRemoved(posicao);
     }
 
     public void troca(int posicaoInicial, int posicaoFinal) {
         Collections.swap(notas, posicaoInicial, posicaoFinal);
-        notifyDataSetChanged();
+        //notifyDataSetChanged();
+
+        /*
+        Usaremo a notificação específica notifyItemMoved(), que necessita
+        de uma posicaoInicial e posicaoFinal
+        Com isso, poderemos mover melhor uma view. Antes, podíamos mover uma
+        nota acima ou abaixo dela um nível. Agora, podemos mover a quantos níveis
+        acima e abaixo quisermos.
+         */
+        notifyItemMoved(posicaoInicial, posicaoFinal);
     }
 
     /*

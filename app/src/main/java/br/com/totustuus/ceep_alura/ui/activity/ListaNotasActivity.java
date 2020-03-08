@@ -28,6 +28,7 @@ import static br.com.totustuus.ceep_alura.ui.activity.NotaActivityConstantes.POS
 
 public class ListaNotasActivity extends AppCompatActivity {
 
+    public static final String TITULO_APPBAR = "Notas";
     private ListaNotasAdapter adapter;
 
     @Override
@@ -35,6 +36,8 @@ public class ListaNotasActivity extends AppCompatActivity {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lista_notas);
+
+        setTitle(TITULO_APPBAR);
 
         //List<Nota> todasNotas = pegaTodasNotas();
         List<Nota> todasNotas = configuraNotasExemplo();
@@ -143,7 +146,12 @@ public class ListaNotasActivity extends AppCompatActivity {
     }
 
     private boolean hasNota(@Nullable Intent data) {
-        return data.hasExtra(CHAVE_NOTA);
+        /*
+         Verifica se Intent é diferente de NULL, pois caso o usuário aperte
+         para voltar na tela de cadastro/edição, o Intent será nulo.
+         Então essa validação nos protegerá de um crash na aplicação.
+         */
+        return data != null && data.hasExtra(CHAVE_NOTA);
     }
 
     private boolean isCodResOK(int resultCode) {
@@ -163,9 +171,9 @@ public class ListaNotasActivity extends AppCompatActivity {
 
         NotaDAO notaDAO = new NotaDAO();
 
-        for (int i = 0; i < 10; i++){
+        /*for (int i = 0; i < 10; i++){
             notaDAO.insere(new Nota("Título " + (i + 1), "Descrição " + (i + 1)));
-        }
+        }*/
 
         return notaDAO.todos();
     }
@@ -178,7 +186,7 @@ public class ListaNotasActivity extends AppCompatActivity {
     }
 
     private void configuraItemTouchHelper(RecyclerView listaNotas) {
-        
+
         /*
         ItemTouchHelper lidará com o comportamento de toque de item.
         Para poder definir os comportamentos de toque de item, ItemTouchHelper espera
